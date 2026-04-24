@@ -7,6 +7,7 @@ import AstroData from './components/AstroData';
 import { getCelestialData, CelestialData } from './lib/astronomy';
 import { cn } from './lib/utils';
 import { BaziProfile, generateAIReportPrompt } from './lib/bazi';
+import { Solar } from 'lunar-javascript';
 
 import CelestialMapHUD from './components/CelestialMapHUD';
 
@@ -15,6 +16,7 @@ export default function App() {
   const [lng, setLng] = useState<number>(116.4074);
   const [inputLat, setInputLat] = useState<string>('39.9042');
   const [inputLng, setInputLng] = useState<string>('116.4074');
+  const [targetDate, setTargetDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
   const [data, setData] = useState<CelestialData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showBaziModal, setShowBaziModal] = useState(false);
@@ -24,14 +26,15 @@ export default function App() {
   const [profile, setProfile] = useState<BaziProfile>(() => {
     const saved = localStorage.getItem('bazi_profile');
     if (saved) return JSON.parse(saved);
+    // Mao Zedong's Bazi as default
     return {
       gender: '男',
-      year: '辛酉',
-      month: '辛丑',
-      day: '庚子',
-      hour: '戊寅',
-      luckPillar: '丙申',
-      age: 44
+      year: '癸巳',
+      month: '甲子',
+      day: '丁酉',
+      hour: '甲辰',
+      luckPillar: '未知',
+      age: 0
     };
   });
 
@@ -40,14 +43,24 @@ export default function App() {
   }, [profile]);
 
   const handleGeneratePrompt = () => {
-    if (!data) return;
-    const now = new Date();
+    // Explicitly parse the date as local to avoid UTC shifts
+    const [y, m, d] = targetDate.split('-').map(Number);
+    
+    // Use Solar.fromYmdHms at noon to avoid boundary issues (like 23:00 day change)
+    const solar = Solar.fromYmdHms(y, m, d, 12, 0, 0);
+    const lunar = solar.getLunar();
+    const eightChar = lunar.getEightChar();
+    
+    const yearGZ = eightChar.getYear();
+    const monthGZ = eightChar.getMonth();
+    const dayGZ = eightChar.getDay();
+
     const prompt = generateAIReportPrompt(profile, {
-      year: now.getFullYear(),
-      month: now.getMonth() + 1,
-      day: now.getDate(),
-      nongli_str: `${data.location.bazi.year}年 ${data.location.bazi.month}月 ${data.location.bazi.day}日`,
-      currentDayPillar: data.location.bazi.day
+      year: y,
+      month: m,
+      day: d,
+      nongli_str: `${yearGZ}年 ${monthGZ}月 ${dayGZ}日`,
+      currentDayPillar: dayGZ
     });
     setGeneratedPrompt(prompt);
     setShowBaziModal(true);
@@ -213,6 +226,15 @@ export default function App() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                    <div className="col-span-2 space-y-1">
+                      <label className="text-[10px] uppercase opacity-40">Target Date (预测日期)</label>
+                      <input 
+                        type="date"
+                        value={targetDate}
+                        onChange={(e) => setTargetDate(e.target.value)}
+                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 cursor-pointer"
+                      />
+                    </div>
                     {[
                       { label: 'Year (年)', key: 'year' },
                       { label: 'Month (月)', key: 'month' },
@@ -303,19 +325,19 @@ export default function App() {
         {/* Prompt Modal */}
         <AnimatePresence>
           {showBaziModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowBaziModal(false)}
-                className="absolute inset-0 bg-bg-dark/80 backdrop-blur-sm"
+                className="absolute inset-0 bg-bg-dark/90 backdrop-blur-md"
               />
               <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="glass w-full max-w-2xl relative z-10 flex flex-col max-h-[80vh] border border-accent-blue/30 shadow-2xl shadow-accent-blue/20"
+                className="glass w-full max-w-2xl relative z-[10000] flex flex-col max-h-[85vh] border border-accent-blue/30 shadow-2xl shadow-accent-blue/20"
               >
                 <div className="p-4 border-b border-border-tech flex justify-between items-center">
                   <div className="flex items-center gap-2">

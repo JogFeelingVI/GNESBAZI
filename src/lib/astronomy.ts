@@ -89,7 +89,7 @@ export function getCelestialData(lat: number, lng: number, date: Date = new Date
         year: eightChar.getYear() || '',
         month: eightChar.getMonth() || '',
         day: eightChar.getDay() || '',
-        hour: eightChar.getHour() || '',
+        hour: eightChar.getTime() || '',
       };
     }
   } catch (e) {

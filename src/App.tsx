@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Globe, Loader2, Navigation, Clock } from 'lucide-react';
+import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X } from 'lucide-react';
 import Compass from './components/Compass';
 import MapControl from './components/MapControl';
 import AstroData from './components/AstroData';
 import { getCelestialData, CelestialData } from './lib/astronomy';
 import { cn } from './lib/utils';
+import { BaziProfile, generateAIReportPrompt } from './lib/bazi';
 
 import CelestialMapHUD from './components/CelestialMapHUD';
 
@@ -16,6 +17,49 @@ export default function App() {
   const [inputLng, setInputLng] = useState<string>('116.4074');
   const [data, setData] = useState<CelestialData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showBaziModal, setShowBaziModal] = useState(false);
+  const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const [profile, setProfile] = useState<BaziProfile>(() => {
+    const saved = localStorage.getItem('bazi_profile');
+    if (saved) return JSON.parse(saved);
+    return {
+      gender: '男',
+      year: '辛酉',
+      month: '辛丑',
+      day: '庚子',
+      hour: '戊寅',
+      luckPillar: '丙申',
+      age: 44
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('bazi_profile', JSON.stringify(profile));
+  }, [profile]);
+
+  const handleGeneratePrompt = () => {
+    if (!data) return;
+    const now = new Date();
+    const prompt = generateAIReportPrompt(profile, {
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+      day: now.getDate(),
+      nongli_str: `${data.location.bazi.year}年 ${data.location.bazi.month}月 ${data.location.bazi.day}日`,
+      currentDayPillar: data.location.bazi.day
+    });
+    setGeneratedPrompt(prompt);
+    setShowBaziModal(true);
+  };
+
+  const handleCopy = () => {
+    if (generatedPrompt) {
+      navigator.clipboard.writeText(generatedPrompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const updateData = useCallback(() => {
     try {
@@ -139,20 +183,83 @@ export default function App() {
                   </form>
                 </div>
 
-                <div className="bg-accent-blue p-5 rounded-lg flex justify-between items-center text-bg-dark shadow-xl shadow-accent-blue/10">
+                <div className="glass p-5 space-y-4">
+                  <div className="flex justify-between items-center border-b border-border-tech pb-2">
+                    <p className="label-tech">Bazi Profile</p>
+                    <User size={14} className="text-accent-blue opacity-50" />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase opacity-40">Gender</label>
+                      <select 
+                        value={profile.gender}
+                        onChange={(e) => setProfile({...profile, gender: e.target.value as any})}
+                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 appearance-none cursor-pointer"
+                      >
+                        <option value="男" className="bg-bg-dark">Male (男)</option>
+                        <option value="女" className="bg-bg-dark">Female (女)</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase opacity-40">Age</label>
+                      <input 
+                        type="number"
+                        value={profile.age}
+                        onChange={(e) => setProfile({...profile, age: parseInt(e.target.value) || 0})}
+                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                    {[
+                      { label: 'Year (年)', key: 'year' },
+                      { label: 'Month (月)', key: 'month' },
+                      { label: 'Day (日)', key: 'day' },
+                      { label: 'Hour (时)', key: 'hour' },
+                      { label: 'Luck (大运)', key: 'luckPillar' },
+                    ].map((field) => (
+                      <div key={field.key} className="space-y-1">
+                        <label className="text-[10px] uppercase opacity-40">{field.label}</label>
+                        <input 
+                          type="text"
+                          value={(profile as any)[field.key]}
+                          onChange={(e) => setProfile({...profile, [field.key]: e.target.value})}
+                          placeholder="e.g. 辛酉"
+                          className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
+                        />
+                      </div>
+                    ))}
+                    <div className="flex items-end">
+                      <button
+                        onClick={handleGeneratePrompt}
+                        className="w-full py-2 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue hover:text-bg-dark transition-all flex items-center justify-center gap-2"
+                      >
+                        <Sparkles size={12} />
+                        Gen Prompt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glass p-5 flex justify-between items-center border-l-4 border-l-accent-blue">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-tighter">Site local epoch</p>
-                    <p className="text-2xl font-black font-mono">{data.localTime.split(' ')[1]}</p>
-                    <div className="pt-2 border-t border-bg-dark/10">
+                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50">Site local epoch</p>
+                    <p className="text-3xl font-black font-mono text-accent-blue tracking-tighter">
+                      {data.localTime.split(' ')[1]}
+                    </p>
+                    <div className="pt-1 mt-1 border-t border-border-tech/30">
                       {data.location.bazi.year && (
-                        <>
-                          <p className="text-[10px] font-bold opacity-80">{data.location.bazi.year}年 {data.location.bazi.month}月 {data.location.bazi.day}日</p>
-                          <p className="text-[10px] font-bold opacity-80">{data.location.bazi.hour}时</p>
-                        </>
+                        <p className="text-[11px] font-mono font-bold text-white/90 tracking-tight">
+                          {data.location.bazi.year} {data.location.bazi.month} {data.location.bazi.day} {data.location.bazi.hour}时
+                        </p>
                       )}
                     </div>
                   </div>
-                  <Clock size={32} className="opacity-80" />
+                  <div className="p-2 bg-accent-blue/10 rounded-full border border-accent-blue/20">
+                    <Clock size={24} className="text-accent-blue animate-pulse" />
+                  </div>
                 </div>
 
                 <div className="glass p-5 text-[10px] font-mono text-text-muted leading-relaxed uppercase space-y-3">
@@ -192,6 +299,56 @@ export default function App() {
           <span>HUD_VERSION: 1.4.0-STABLE</span>
           <span>SESSION_EPOCH: {new Date().toISOString()}</span>
         </footer>
+
+        {/* Prompt Modal */}
+        <AnimatePresence>
+          {showBaziModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowBaziModal(false)}
+                className="absolute inset-0 bg-bg-dark/80 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="glass w-full max-w-2xl relative z-10 flex flex-col max-h-[80vh] border border-accent-blue/30 shadow-2xl shadow-accent-blue/20"
+              >
+                <div className="p-4 border-b border-border-tech flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} className="text-accent-blue" />
+                    <h3 className="text-sm font-bold tracking-tight uppercase">AI Fortune Report Prompt</h3>
+                  </div>
+                  <button 
+                    onClick={() => setShowBaziModal(false)}
+                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  <div className="bg-bg-dark/50 border border-border-tech p-4 rounded font-mono text-[11px] whitespace-pre-wrap leading-relaxed text-white/80">
+                    {generatedPrompt}
+                  </div>
+                </div>
+
+                <div className="p-4 border-t border-border-tech flex justify-end gap-3">
+                  <button
+                    onClick={handleCopy}
+                    className="px-6 py-2 bg-accent-blue text-bg-dark text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    {copied ? 'Copied' : 'Copy Prompt'}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

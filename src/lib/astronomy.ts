@@ -3,6 +3,9 @@ import { DateTime } from 'luxon';
 import tzlookup from 'tz-lookup';
 import { Solar } from 'lunar-javascript';
 
+import geomagnetism from 'geomagnetism';
+import * as geomag from 'geomag';
+
 export interface CelestialData {
   sun: {
     azimuth: number;
@@ -39,8 +42,41 @@ export function getCelestialData(lat: number, lng: number, date: Date = new Date
 
   // Magnetic Declination
   let magneticDeclination = 0;
-  // Note: geomagnetism library is intentionally disabled due to potential browser compatibility issues (fs dependency)
-  // If needed, replace with a browser-safe WMM implementation.
+  try {
+    const geo: any = geomagnetism;
+    const modelFn = geo?.model || (geo as any)?.default?.model || (typeof geo === 'function' ? geo : null);
+    
+    if (typeof modelFn === 'function') {
+      const model = modelFn(date);
+      if (model && typeof model.point === 'function') {
+        const info = model.point([lat, lng]);
+        magneticDeclination = info?.decl || 0;
+      }
+    }
+    
+    // Fallback if geomagnetism failed or returned exactly 0 (unlikely for most points)
+    if (magneticDeclination === 0) {
+      const g: any = geomag;
+      const fieldFn = g.field || g.default?.field;
+      if (typeof fieldFn === 'function') {
+        const info = fieldFn(lat, lng);
+        magneticDeclination = info?.declination || 0;
+      }
+    }
+  } catch (e) {
+    console.warn('Magnetic declination failed:', e);
+    // Final fallback to geomag if the first block crashed
+    try {
+      const g: any = geomag;
+      const fieldFn = g.field || g.default?.field;
+      if (typeof fieldFn === 'function') {
+        const info = fieldFn(lat, lng);
+        magneticDeclination = info?.declination || 0;
+      }
+    } catch (e2) {
+      console.error('All magnetic models failed:', e2);
+    }
+  }
 
   // Bazi (Chinese Calendar)
   let bazi = { year: '', month: '', day: '', hour: '' };

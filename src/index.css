@@ -32,3 +32,16 @@ body {
 .leaflet-container {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-border-tech rounded;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-accent-blue/30;
+}

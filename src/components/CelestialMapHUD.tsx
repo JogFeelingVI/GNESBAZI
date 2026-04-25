@@ -132,7 +132,7 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
         onClick={exportAsPng}
         className="w-full flex items-center justify-center gap-3 py-4 bg-[#00D1FF10] border border-accent-blue/30 text-accent-blue text-xs font-bold uppercase tracking-[0.3em] hover:bg-accent-blue hover:text-bg-dark hover:border-accent-blue transition-all rounded shadow-lg shadow-accent-blue/5"
       >
-        <Download size={16} /> Process Image Observation (PNG)
+        <Download size={16} /> Export Observation (PNG)
       </button>
     </div>
   );

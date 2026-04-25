@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X } from 'lucide-react';
+import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X, History, Trash2 } from 'lucide-react';
 import Compass from './components/Compass';
 import MapControl from './components/MapControl';
 import AstroData from './components/AstroData';
@@ -10,6 +10,13 @@ import { BaziProfile, generateAIReportPrompt } from './lib/bazi';
 import { Solar } from 'lunar-javascript';
 
 import CelestialMapHUD from './components/CelestialMapHUD';
+
+interface LocationHistory {
+  lat: number;
+  lng: number;
+  timestamp: number;
+  id: string;
+}
 
 export default function App() {
   const [lat, setLat] = useState<number>(39.9042); // Beijing default
@@ -22,6 +29,10 @@ export default function App() {
   const [showBaziModal, setShowBaziModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<LocationHistory[]>(() => {
+    const saved = localStorage.getItem('location_history');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const [profile, setProfile] = useState<BaziProfile>(() => {
     const saved = localStorage.getItem('bazi_profile');
@@ -41,6 +52,38 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('bazi_profile', JSON.stringify(profile));
   }, [profile]);
+
+  useEffect(() => {
+    localStorage.setItem('location_history', JSON.stringify(history));
+  }, [history]);
+
+  const addToHistory = (latitude: number, longitude: number) => {
+    const newEntry: LocationHistory = {
+      lat: latitude,
+      lng: longitude,
+      timestamp: Date.now(),
+      id: `${latitude}-${longitude}`
+    };
+
+    setHistory(prev => {
+      // Avoid duplicates
+      const filtered = prev.filter(h => h.id !== newEntry.id);
+      const updated = [newEntry, ...filtered].slice(0, 10); // Keep last 10
+      return updated;
+    });
+  };
+
+  const removeFromHistory = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setHistory(prev => prev.filter(h => h.id !== id));
+  };
+
+  const selectFromHistory = (h: LocationHistory) => {
+    setLat(h.lat);
+    setLng(h.lng);
+    setInputLat(h.lat.toString());
+    setInputLng(h.lng.toString());
+  };
 
   const handleGeneratePrompt = () => {
     // Explicitly parse the date as local to avoid UTC shifts
@@ -97,6 +140,7 @@ export default function App() {
     if (!isNaN(newLat) && !isNaN(newLng)) {
       setLat(newLat);
       setLng(newLng);
+      addToHistory(newLat, newLng);
     }
   };
 
@@ -109,6 +153,7 @@ export default function App() {
         setLng(longitude);
         setInputLat(latitude.toString());
         setInputLng(longitude.toString());
+        addToHistory(latitude, longitude);
         setIsLoading(false);
       }, (error) => {
         console.error(error);
@@ -195,6 +240,42 @@ export default function App() {
                     </div>
                   </form>
                 </div>
+
+                {history.length > 0 && (
+                  <div className="glass p-5 space-y-4">
+                    <div className="flex justify-between items-center border-b border-border-tech pb-2">
+                      <p className="label-tech">Recent Vectors</p>
+                      <History size={14} className="text-accent-blue opacity-50" />
+                    </div>
+                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
+                      {history.map((h) => (
+                        <div 
+                          key={h.id}
+                          onClick={() => selectFromHistory(h)}
+                          className={cn(
+                            "group flex items-center justify-between p-2 rounded border border-border-tech/40 hover:border-accent-blue/50 hover:bg-accent-blue/5 transition-all cursor-pointer",
+                            lat === h.lat && lng === h.lng ? "border-accent-blue/50 bg-accent-blue/5" : ""
+                          )}
+                        >
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-mono text-[10px] text-white">
+                              {h.lat.toFixed(4)}°, {h.lng.toFixed(4)}°
+                            </span>
+                            <span className="text-[8px] opacity-40 uppercase tracking-widest">
+                              {new Date(h.timestamp).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <button
+                            onClick={(e) => removeFromHistory(h.id, e)}
+                            className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="glass p-5 space-y-4">
                   <div className="flex justify-between items-center border-b border-border-tech pb-2">

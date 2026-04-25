@@ -97,23 +97,45 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             x1={center}
             y1={center}
             x2={center}
-            y2={center - radius + 10}
+            y2={center - radius + 15}
             stroke="#10b981"
-            strokeWidth="1.5"
-            strokeDasharray="2 2"
+            strokeWidth={1.5}
+            strokeDasharray="3 2"
+          />
+          <path
+            d={`M ${center - 6} ${center - radius + 5} L ${center} ${center - radius - 5} L ${center + 6} ${center - radius + 5} Z`}
+            fill="#10b981"
+          />
+          <rect
+            x={center - 12}
+            y={center - radius - 24}
+            width={24}
+            height={14}
+            fill="#0F1115"
+            stroke="#10b981"
+            strokeWidth={1}
+            rx={2}
           />
           <text
             x={center}
-            y={center - radius + 5}
+            y={center - radius - 17}
             textAnchor="middle"
-            style={{ fill: "#10b981", fontSize: '8px', fontWeight: 'bold' }}
+            dominantBaseline="middle"
+            style={{ 
+              fill: "#10b981", 
+              fontSize: '10px', 
+              fontWeight: 'bold', 
+              fontFamily: 'monospace',
+              letterSpacing: '0.05em'
+            }}
           >
             MN
           </text>
         </g>
 
         {/* Center Point - Minimalist */}
-        <circle cx={center} cy={center} r={3} fill="#00D1FF" stroke="white" strokeWidth="1" />
+        <circle cx={center} cy={center} r={4} fill="#0F1115" stroke="#00D1FF" strokeWidth="1.5" />
+        <circle cx={center} cy={center} r={1.5} fill="#00D1FF" />
 
         {/* Sun Indicator - Fixed rotation and origin for better export support */}
         <g transform={`rotate(${sunAzimuth}, ${center}, ${center})`}>
@@ -123,15 +145,16 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             x2={center}
             y2={center - radius}
             stroke="#FFD700"
-            strokeWidth="3"
-            style={{ filter: 'drop-shadow(0 0 8px #FFD700)' }}
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.4))' }}
           />
           <text 
             x={center} 
-            y={center - radius} 
+            y={center - radius - 20} 
             textAnchor="middle" 
             dominantBaseline="middle" 
-            style={{ fontSize: '20px' }}
+            style={{ fontSize: '24px', filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
           >
             ☀️
           </text>
@@ -143,18 +166,19 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             x1={center}
             y1={center}
             x2={center}
-            y2={center - (radius * 0.75)}
+            y2={center - radius}
             stroke="#00D1FF"
             strokeWidth="2"
             strokeDasharray="4 2"
-            style={{ filter: 'drop-shadow(0 0 8px #00D1FF)' }}
+            strokeLinecap="round"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(0, 209, 255, 0.4))' }}
           />
           <text 
             x={center} 
-            y={center - (radius * 0.75)} 
+            y={center - radius - 20} 
             textAnchor="middle" 
             dominantBaseline="middle" 
-            style={{ fontSize: '18px' }}
+            style={{ fontSize: '22px', filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
           >
             🌙
           </text>

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X, History, Trash2 } from 'lucide-react';
 import Compass from './components/Compass';
-import MapControl from './components/MapControl';
 import AstroData from './components/AstroData';
 import { getCelestialData, CelestialData } from './lib/astronomy';
 import { cn } from './lib/utils';

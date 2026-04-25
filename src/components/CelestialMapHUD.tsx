@@ -76,12 +76,13 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
           zoom={zoom}
           zoomControl={false}
           scrollWheelZoom={true}
-          className="h-full w-full grayscale contrast-110 brightness-90 shadow-inner"
+          className="h-full w-full shadow-inner"
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+            url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
             crossOrigin="anonymous"
+            maxZoom={17}
           />
           <Marker position={[lat, lng]} />
           <SetMapState lat={lat} lng={lng} zoom={zoom} />

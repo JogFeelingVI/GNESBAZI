@@ -273,13 +273,10 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
           {/* Station Info Section */}
           <div className="space-y-2">
             <div 
-              className="flex items-center justify-between gap-2 border-b border-border-tech/50 pb-1 cursor-pointer hover:bg-white/5 transition-colors"
+              className="flex items-center justify-between gap-2 border-l-2 border-accent-blue pl-2 cursor-pointer hover:bg-white/5 transition-colors"
               onClick={() => setIsStationInfoCollapsed(!isStationInfoCollapsed)}
             >
-              <div className="flex items-center gap-2">
-                <Target size={14} className="text-accent-blue" />
-                <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Station Info</p>
-              </div>
+              <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Station Info</p>
               {isStationInfoCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
             </div>
             
@@ -289,7 +286,7 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
+                  className="overflow-hidden pl-2"
                 >
                   <p className="text-[8px] opacity-50 uppercase mb-0.5 tracking-tighter">Station (Observer)</p>
                   <p className="font-mono text-xs text-white/90">{lat.toFixed(6)}° N, {lng.toFixed(6)}° E</p>
@@ -303,13 +300,10 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
           {target ? (
             <div className="space-y-2 border-t border-border-tech/30 pt-2">
               <div 
-                className="flex items-center justify-between gap-2 border-b border-border-tech/50 pb-1 cursor-pointer hover:bg-white/5 transition-colors"
+                className="flex items-center justify-between gap-2 border-l-2 border-accent-blue pl-2 cursor-pointer hover:bg-white/5 transition-colors"
                 onClick={() => setIsTargetInfoCollapsed(!isTargetInfoCollapsed)}
               >
-                <div className="flex items-center gap-2">
-                  <Crosshair size={14} className="text-accent-blue" />
-                  <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Target Parameters</p>
-                </div>
+                <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Target Parameters</p>
                 {isTargetInfoCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
               </div>
 
@@ -319,7 +313,7 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="space-y-2 overflow-hidden"
+                    className="space-y-2 overflow-hidden pl-2"
                   >
                     <div>
                       <p className="text-[8px] text-accent-blue uppercase mb-0.5 tracking-tighter font-bold">Target Position</p>

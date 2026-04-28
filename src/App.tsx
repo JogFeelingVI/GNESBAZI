@@ -209,7 +209,7 @@ export default function App() {
               <section className="col-span-12 lg:col-span-3 space-y-6">
                 <div className="glass p-5 space-y-6">
                   <div 
-                    className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                    className="flex justify-between items-center border-l-2 border-accent-blue pl-2 cursor-pointer hover:bg-white/5 transition-colors"
                     onClick={() => setIsTargetParamsCollapsed(!isTargetParamsCollapsed)}
                   >
                     <p className="label-tech">Target Parameters</p>
@@ -223,7 +223,7 @@ export default function App() {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         onSubmit={handleApply} 
-                        className="space-y-4 overflow-hidden"
+                        className="space-y-4 overflow-hidden pl-2"
                       >
                         <div className="space-y-1">
                           <label className="label-tech opacity-40">Latitude</label>
@@ -266,13 +266,10 @@ export default function App() {
                 {history.length > 0 && (
                   <div className="glass p-5 space-y-4">
                     <div 
-                      className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                      className="flex justify-between items-center border-l-2 border-emerald-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
                       onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
                     >
-                      <div className="flex items-center gap-2">
-                        <p className="label-tech">Recent Vectors</p>
-                        <History size={14} className="text-accent-blue opacity-50" />
-                      </div>
+                      <p className="label-tech">Recent Vectors</p>
                       {isHistoryCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                     </div>
                     
@@ -282,7 +279,7 @@ export default function App() {
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
-                          className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar overflow-hidden"
+                          className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar overflow-hidden pl-2"
                         >
                           {history.map((h) => (
                             <div 
@@ -317,13 +314,10 @@ export default function App() {
 
                 <div className="glass p-5 space-y-4">
                   <div 
-                    className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                    className="flex justify-between items-center border-l-2 border-amber-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
                     onClick={() => setIsBaziCollapsed(!isBaziCollapsed)}
                   >
-                    <div className="flex items-center gap-2">
-                       <p className="label-tech">Bazi Profile</p>
-                       <User size={14} className="text-accent-blue opacity-50" />
-                    </div>
+                    <p className="label-tech">Bazi Profile</p>
                     {isBaziCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                   </div>
                   
@@ -333,7 +327,7 @@ export default function App() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="space-y-4 overflow-hidden"
+                        className="space-y-4 overflow-hidden pl-2"
                       >
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
@@ -401,12 +395,12 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                <div className="glass p-5 border-l-4 border-l-accent-blue space-y-3">
+                <div className="glass p-5 space-y-3">
                   <div 
-                    className="flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors"
+                    className="flex justify-between items-center border-l-2 border-purple-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
                     onClick={() => setIsClockCollapsed(!isClockCollapsed)}
                   >
-                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50">Local Epoch</p>
+                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50 font-mono">Local Epoch</p>
                     {isClockCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                   </div>
 
@@ -416,7 +410,7 @@ export default function App() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="flex justify-between items-center overflow-hidden"
+                        className="flex justify-between items-center overflow-hidden pl-2"
                       >
                         <div className="space-y-1">
                           <p className="text-3xl font-black font-mono text-accent-blue tracking-tighter">

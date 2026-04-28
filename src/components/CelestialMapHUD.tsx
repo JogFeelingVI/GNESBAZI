@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { toPng } from 'html-to-image';
-import { Download, Target, ZoomIn, ZoomOut, Crosshair } from 'lucide-react';
+import { Download, Target, ZoomIn, ZoomOut, Crosshair, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Compass from './Compass';
 
@@ -92,6 +92,8 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
   const [zoom, setZoom] = useState(12);
   const [target, setTarget] = useState<TargetPoint | null>(null);
   const [observerAlt, setObserverAlt] = useState<number | null>(null);
+  const [isStationInfoCollapsed, setIsStationInfoCollapsed] = useState(false);
+  const [isTargetInfoCollapsed, setIsTargetInfoCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchObserverAlt = async () => {
@@ -267,60 +269,95 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
            )}
         </div>
 
-        <div className="absolute top-4 left-4 z-[1000] glass p-3 border-l-2 border-l-accent-blue min-w-[200px] shadow-2xl">
-          <div className="flex items-center gap-2 mb-2 border-b border-border-tech/50 pb-1">
-            <Target size={14} className="text-accent-blue" />
-            <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Station Info</p>
-          </div>
-          
-          <div className="space-y-3">
-            <div>
-              <p className="text-[8px] opacity-50 uppercase mb-0.5 tracking-tighter">Station (Observer)</p>
-              <p className="font-mono text-xs text-white/90">{lat.toFixed(6)}° N, {lng.toFixed(6)}° E</p>
-              <p className="font-mono text-[10px] text-accent-blue/70">Elev: {observerAlt !== null ? `${observerAlt.toFixed(1)}m` : '--'}</p>
-            </div>
-
-            {target ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-2 border-t border-border-tech/30 pt-2"
-              >
-                <div>
-                  <p className="text-[8px] text-accent-blue uppercase mb-0.5 tracking-tighter font-bold">Target Position</p>
-                  <p className="font-mono text-xs text-accent-blue">{target.lat.toFixed(6)}° N, {target.lng.toFixed(6)}° E</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="glass-muted p-1 px-2 border border-border-tech/30">
-                    <p className="text-[7px] opacity-50 uppercase tracking-tighter">Elevation</p>
-                    <p className="font-mono text-xs text-accent-blue tracking-tighter">{target.alt !== null ? `${target.alt.toFixed(1)}m` : '---'}</p>
-                  </div>
-                  <div className="glass-muted p-1 px-2 border border-border-tech/30">
-                    <p className="text-[7px] opacity-50 uppercase tracking-tighter">Straight Dist</p>
-                    <p className="font-mono text-xs text-accent-blue tracking-tighter">{(target.distance / 1000).toFixed(3)} km</p>
-                  </div>
-                  <div className="glass-muted p-1 px-2 border border-border-tech/30">
-                    <p className="text-[7px] opacity-50 uppercase tracking-tighter">Bearing (TN)</p>
-                    <p className="font-mono text-xs text-accent-blue tracking-tighter">{target.bearing.toFixed(2)}°</p>
-                  </div>
-                  <div className="glass-muted p-1 px-2 border border-border-tech/30">
-                    <p className="text-[7px] opacity-50 uppercase tracking-tighter">Pitch Angle</p>
-                    <p className="font-mono text-xs text-accent-blue tracking-tighter">
-                      {target.elevationAngle !== null ? `${target.elevationAngle.toFixed(2)}°` : '---'}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <div className="border-t border-border-tech/30 pt-2">
-                <p className="text-[8px] opacity-40 uppercase animate-pulse">Scanning Terrain...</p>
-                <div className="mt-2 text-[10px] text-text-muted italic leading-tight">
-                  Click map to designate custom coordinate
-                </div>
+        <div className="absolute top-4 left-4 z-[1000] glass p-3 border-l-2 border-l-accent-blue min-w-[220px] shadow-2xl space-y-3">
+          {/* Station Info Section */}
+          <div className="space-y-2">
+            <div 
+              className="flex items-center justify-between gap-2 border-b border-border-tech/50 pb-1 cursor-pointer hover:bg-white/5 transition-colors"
+              onClick={() => setIsStationInfoCollapsed(!isStationInfoCollapsed)}
+            >
+              <div className="flex items-center gap-2">
+                <Target size={14} className="text-accent-blue" />
+                <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Station Info</p>
               </div>
-            )}
+              {isStationInfoCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
+            </div>
+            
+            <AnimatePresence>
+              {!isStationInfoCollapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <p className="text-[8px] opacity-50 uppercase mb-0.5 tracking-tighter">Station (Observer)</p>
+                  <p className="font-mono text-xs text-white/90">{lat.toFixed(6)}° N, {lng.toFixed(6)}° E</p>
+                  <p className="font-mono text-[10px] text-accent-blue/70">Elev: {observerAlt !== null ? `${observerAlt.toFixed(1)}m` : '--'}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Target Section */}
+          {target ? (
+            <div className="space-y-2 border-t border-border-tech/30 pt-2">
+              <div 
+                className="flex items-center justify-between gap-2 border-b border-border-tech/50 pb-1 cursor-pointer hover:bg-white/5 transition-colors"
+                onClick={() => setIsTargetInfoCollapsed(!isTargetInfoCollapsed)}
+              >
+                <div className="flex items-center gap-2">
+                  <Crosshair size={14} className="text-accent-blue" />
+                  <p className="label-tech text-[10px] text-accent-blue uppercase tracking-widest font-bold">Target Parameters</p>
+                </div>
+                {isTargetInfoCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
+              </div>
+
+              <AnimatePresence>
+                {!isTargetInfoCollapsed && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="space-y-2 overflow-hidden"
+                  >
+                    <div>
+                      <p className="text-[8px] text-accent-blue uppercase mb-0.5 tracking-tighter font-bold">Target Position</p>
+                      <p className="font-mono text-xs text-accent-blue">{target.lat.toFixed(6)}° N, {target.lng.toFixed(6)}° E</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="glass-muted p-1 px-2 border border-border-tech/30">
+                        <p className="text-[7px] opacity-50 uppercase tracking-tighter">Elevation</p>
+                        <p className="font-mono text-xs text-accent-blue tracking-tighter">{target.alt !== null ? `${target.alt.toFixed(1)}m` : '---'}</p>
+                      </div>
+                      <div className="glass-muted p-1 px-2 border border-border-tech/30">
+                        <p className="text-[7px] opacity-50 uppercase tracking-tighter">Straight Dist</p>
+                        <p className="font-mono text-xs text-accent-blue tracking-tighter">{(target.distance / 1000).toFixed(3)} km</p>
+                      </div>
+                      <div className="glass-muted p-1 px-2 border border-border-tech/30">
+                        <p className="text-[7px] opacity-50 uppercase tracking-tighter">Bearing (TN)</p>
+                        <p className="font-mono text-xs text-accent-blue tracking-tighter">{target.bearing.toFixed(2)}°</p>
+                      </div>
+                      <div className="glass-muted p-1 px-2 border border-border-tech/30">
+                        <p className="text-[7px] opacity-50 uppercase tracking-tighter">Pitch Angle</p>
+                        <p className="font-mono text-xs text-accent-blue tracking-tighter">
+                          {target.elevationAngle !== null ? `${target.elevationAngle.toFixed(2)}°` : '---'}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ) : (
+            <div className="border-t border-border-tech/30 pt-2 animate-pulse">
+              <p className="text-[8px] opacity-40 uppercase">Scanning Terrain...</p>
+              <div className="mt-2 text-[10px] text-text-muted italic leading-tight">
+                Click map to designate custom coordinate
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="absolute top-4 right-4 z-[1000] flex gap-2">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X, History, Trash2 } from 'lucide-react';
+import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X, History, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import Compass from './components/Compass';
 import AstroData from './components/AstroData';
 import { getCelestialData, CelestialData } from './lib/astronomy';
@@ -47,6 +47,12 @@ export default function App() {
       age: 0
     };
   });
+
+  const [isTargetParamsCollapsed, setIsTargetParamsCollapsed] = useState(false);
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
+  const [isBaziCollapsed, setIsBaziCollapsed] = useState(false);
+  const [isClockCollapsed, setIsClockCollapsed] = useState(false);
+  const [isStatusCollapsed, setIsStatusCollapsed] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('bazi_profile', JSON.stringify(profile));
@@ -202,174 +208,258 @@ export default function App() {
               {/* Left Sidebar: Controls */}
               <section className="col-span-12 lg:col-span-3 space-y-6">
                 <div className="glass p-5 space-y-6">
-                  <p className="label-tech border-b border-border-tech pb-2">Target Parameters</p>
-                  <form onSubmit={handleApply} className="space-y-4">
-                    <div className="space-y-1">
-                      <label className="label-tech opacity-40">Latitude</label>
-                      <input
-                        type="text"
-                        value={inputLat}
-                        onChange={(e) => setInputLat(e.target.value)}
-                        className="bg-transparent w-full font-mono text-white outline-none border-b border-border-tech focus:border-accent-blue pb-1"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="label-tech opacity-40">Longitude</label>
-                      <input
-                        type="text"
-                        value={inputLng}
-                        onChange={(e) => setInputLng(e.target.value)}
-                        className="bg-transparent w-full font-mono text-white outline-none border-b border-border-tech focus:border-accent-blue pb-1"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                       <button
-                         type="submit"
-                         className="flex-1 py-3 bg-[#00D1FF15] border border-accent-blue text-accent-blue text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-accent-blue hover:text-bg-dark transition-all"
-                       >
-                         Recalculate
-                       </button>
-                       <button
-                         type="button"
-                         onClick={useCurrentLocation}
-                         className="px-4 border border-border-tech hover:border-accent-blue transition-colors text-text-muted"
-                       >
-                         <Navigation size={16} />
-                       </button>
-                    </div>
-                  </form>
+                  <div 
+                    className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                    onClick={() => setIsTargetParamsCollapsed(!isTargetParamsCollapsed)}
+                  >
+                    <p className="label-tech">Target Parameters</p>
+                    {isTargetParamsCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
+                  </div>
+                  
+                  <AnimatePresence>
+                    {!isTargetParamsCollapsed && (
+                      <motion.form 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        onSubmit={handleApply} 
+                        className="space-y-4 overflow-hidden"
+                      >
+                        <div className="space-y-1">
+                          <label className="label-tech opacity-40">Latitude</label>
+                          <input
+                            type="text"
+                            value={inputLat}
+                            onChange={(e) => setInputLat(e.target.value)}
+                            className="bg-transparent w-full font-mono text-white outline-none border-b border-border-tech focus:border-accent-blue pb-1"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="label-tech opacity-40">Longitude</label>
+                          <input
+                            type="text"
+                            value={inputLng}
+                            onChange={(e) => setInputLng(e.target.value)}
+                            className="bg-transparent w-full font-mono text-white outline-none border-b border-border-tech focus:border-accent-blue pb-1"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                           <button
+                             type="submit"
+                             className="flex-1 py-3 bg-[#00D1FF15] border border-accent-blue text-accent-blue text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-accent-blue hover:text-bg-dark transition-all"
+                           >
+                             Recalculate
+                           </button>
+                           <button
+                             type="button"
+                             onClick={useCurrentLocation}
+                             className="px-4 border border-border-tech hover:border-accent-blue transition-colors text-text-muted"
+                           >
+                             <Navigation size={16} />
+                           </button>
+                        </div>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {history.length > 0 && (
                   <div className="glass p-5 space-y-4">
-                    <div className="flex justify-between items-center border-b border-border-tech pb-2">
-                      <p className="label-tech">Recent Vectors</p>
-                      <History size={14} className="text-accent-blue opacity-50" />
+                    <div 
+                      className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                      onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <p className="label-tech">Recent Vectors</p>
+                        <History size={14} className="text-accent-blue opacity-50" />
+                      </div>
+                      {isHistoryCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                     </div>
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
-                      {history.map((h) => (
-                        <div 
-                          key={h.id}
-                          onClick={() => selectFromHistory(h)}
-                          className={cn(
-                            "group flex items-center justify-between p-2 rounded border border-border-tech/40 hover:border-accent-blue/50 hover:bg-accent-blue/5 transition-all cursor-pointer",
-                            lat === h.lat && lng === h.lng ? "border-accent-blue/50 bg-accent-blue/5" : ""
-                          )}
+                    
+                    <AnimatePresence>
+                      {!isHistoryCollapsed && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar overflow-hidden"
                         >
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-mono text-[10px] text-white">
-                              {h.lat.toFixed(4)}°, {h.lng.toFixed(4)}°
-                            </span>
-                            <span className="text-[8px] opacity-40 uppercase tracking-widest">
-                              {new Date(h.timestamp).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <button
-                            onClick={(e) => removeFromHistory(h.id, e)}
-                            className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                          {history.map((h) => (
+                            <div 
+                              key={h.id}
+                              onClick={() => selectFromHistory(h)}
+                              className={cn(
+                                "group flex items-center justify-between p-2 rounded border border-border-tech/40 hover:border-accent-blue/50 hover:bg-accent-blue/5 transition-all cursor-pointer",
+                                lat === h.lat && lng === h.lng ? "border-accent-blue/50 bg-accent-blue/5" : ""
+                              )}
+                            >
+                              <div className="flex flex-col gap-0.5">
+                                <span className="font-mono text-[10px] text-white">
+                                  {h.lat.toFixed(4)}°, {h.lng.toFixed(4)}°
+                                </span>
+                                <span className="text-[8px] opacity-40 uppercase tracking-widest">
+                                  {new Date(h.timestamp).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <button
+                                onClick={(e) => removeFromHistory(h.id, e)}
+                                className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
 
                 <div className="glass p-5 space-y-4">
-                  <div className="flex justify-between items-center border-b border-border-tech pb-2">
-                    <p className="label-tech">Bazi Profile</p>
-                    <User size={14} className="text-accent-blue opacity-50" />
+                  <div 
+                    className="flex justify-between items-center border-b border-border-tech pb-2 cursor-pointer hover:bg-white/5 transition-colors"
+                    onClick={() => setIsBaziCollapsed(!isBaziCollapsed)}
+                  >
+                    <div className="flex items-center gap-2">
+                       <p className="label-tech">Bazi Profile</p>
+                       <User size={14} className="text-accent-blue opacity-50" />
+                    </div>
+                    {isBaziCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase opacity-40">Gender</label>
-                      <select 
-                        value={profile.gender}
-                        onChange={(e) => setProfile({...profile, gender: e.target.value as any})}
-                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 appearance-none cursor-pointer"
+                  <AnimatePresence>
+                    {!isBaziCollapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-4 overflow-hidden"
                       >
-                        <option value="男" className="bg-bg-dark">Male (男)</option>
-                        <option value="女" className="bg-bg-dark">Female (女)</option>
-                      </select>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] uppercase opacity-40">Age</label>
-                      <input 
-                        type="number"
-                        value={profile.age}
-                        onChange={(e) => setProfile({...profile, age: parseInt(e.target.value) || 0})}
-                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
-                      />
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] uppercase opacity-40">Gender</label>
+                            <select 
+                              value={profile.gender}
+                              onChange={(e) => setProfile({...profile, gender: e.target.value as any})}
+                              className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 appearance-none cursor-pointer"
+                            >
+                              <option value="男" className="bg-bg-dark">Male (男)</option>
+                              <option value="女" className="bg-bg-dark">Female (女)</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] uppercase opacity-40">Age</label>
+                            <input 
+                              type="number"
+                              value={profile.age}
+                              onChange={(e) => setProfile({...profile, age: parseInt(e.target.value) || 0})}
+                              className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
+                            />
+                          </div>
+                        </div>
 
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-4">
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-[10px] uppercase opacity-40">Target Date (预测日期)</label>
-                      <input 
-                        type="date"
-                        value={targetDate}
-                        onChange={(e) => setTargetDate(e.target.value)}
-                        className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 cursor-pointer"
-                      />
-                    </div>
-                    {[
-                      { label: 'Year (年)', key: 'year' },
-                      { label: 'Month (月)', key: 'month' },
-                      { label: 'Day (日)', key: 'day' },
-                      { label: 'Hour (时)', key: 'hour' },
-                      { label: 'Luck (大运)', key: 'luckPillar' },
-                    ].map((field) => (
-                      <div key={field.key} className="space-y-1">
-                        <label className="text-[10px] uppercase opacity-40">{field.label}</label>
-                        <input 
-                          type="text"
-                          value={(profile as any)[field.key]}
-                          onChange={(e) => setProfile({...profile, [field.key]: e.target.value})}
-                          placeholder="e.g. 辛酉"
-                          className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
-                        />
-                      </div>
-                    ))}
-                    <div className="flex items-end">
-                      <button
-                        onClick={handleGeneratePrompt}
-                        className="w-full py-2 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue hover:text-bg-dark transition-all flex items-center justify-center gap-2"
-                      >
-                        <Sparkles size={12} />
-                        Gen Prompt
-                      </button>
-                    </div>
-                  </div>
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                          <div className="col-span-2 space-y-1">
+                            <label className="text-[10px] uppercase opacity-40">Target Date (预测日期)</label>
+                            <input 
+                              type="date"
+                              value={targetDate}
+                              onChange={(e) => setTargetDate(e.target.value)}
+                              className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1 cursor-pointer"
+                            />
+                          </div>
+                          {[
+                            { label: 'Year (年)', key: 'year' },
+                            { label: 'Month (月)', key: 'month' },
+                            { label: 'Day (日)', key: 'day' },
+                            { label: 'Hour (时)', key: 'hour' },
+                            { label: 'Luck (大运)', key: 'luckPillar' },
+                          ].map((field) => (
+                            <div key={field.key} className="space-y-1">
+                              <label className="text-[10px] uppercase opacity-40">{field.label}</label>
+                              <input 
+                                type="text"
+                                value={(profile as any)[field.key]}
+                                onChange={(e) => setProfile({...profile, [field.key]: e.target.value})}
+                                placeholder="e.g. 辛酉"
+                                className="bg-transparent w-full font-mono text-xs text-white outline-none border-b border-border-tech pb-1"
+                              />
+                            </div>
+                          ))}
+                          <div className="flex items-end">
+                            <button
+                              onClick={handleGeneratePrompt}
+                              className="w-full py-2 bg-accent-blue/10 border border-accent-blue/30 text-accent-blue text-[9px] font-bold uppercase tracking-widest hover:bg-accent-blue hover:text-bg-dark transition-all flex items-center justify-center gap-2"
+                            >
+                              <Sparkles size={12} />
+                              Gen Prompt
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
-                <div className="glass p-5 flex justify-between items-center border-l-4 border-l-accent-blue">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50">Site local epoch</p>
-                    <p className="text-3xl font-black font-mono text-accent-blue tracking-tighter">
-                      {data.localTime.split(' ')[1]}
-                    </p>
-                    <div className="pt-1 mt-1 border-t border-border-tech/30">
-                      {data.location.bazi.year && (
-                        <p className="text-[11px] font-mono font-bold text-white/90 tracking-tight">
-                          {data.location.bazi.year} {data.location.bazi.month} {data.location.bazi.day} {data.location.bazi.hour}时
-                        </p>
-                      )}
-                    </div>
+                <div className="glass p-5 border-l-4 border-l-accent-blue space-y-3">
+                  <div 
+                    className="flex justify-between items-center cursor-pointer hover:bg-white/5 transition-colors"
+                    onClick={() => setIsClockCollapsed(!isClockCollapsed)}
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50">Local Epoch</p>
+                    {isClockCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                   </div>
-                  <div className="p-2 bg-accent-blue/10 rounded-full border border-accent-blue/20">
-                    <Clock size={24} className="text-accent-blue animate-pulse" />
-                  </div>
+
+                  <AnimatePresence>
+                    {!isClockCollapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="flex justify-between items-center overflow-hidden"
+                      >
+                        <div className="space-y-1">
+                          <p className="text-3xl font-black font-mono text-accent-blue tracking-tighter">
+                            {data.localTime.split(' ')[1]}
+                          </p>
+                          <div className="pt-1 mt-1 border-t border-border-tech/30">
+                            {data.location.bazi.year && (
+                              <p className="text-[11px] font-mono font-bold text-white/90 tracking-tight">
+                                {data.location.bazi.year} {data.location.bazi.month} {data.location.bazi.day} {data.location.bazi.hour}时
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="p-2 bg-accent-blue/10 rounded-full border border-accent-blue/20">
+                          <Clock size={24} className="text-accent-blue animate-pulse" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="glass p-5 text-[10px] font-mono text-text-muted leading-relaxed uppercase space-y-3">
-                   <div className="border-l-2 border-accent-blue pl-2">
+                   <div 
+                     className="flex justify-between items-center border-l-2 border-accent-blue pl-2 cursor-pointer hover:bg-white/5 transition-colors"
+                     onClick={() => setIsStatusCollapsed(!isStatusCollapsed)}
+                   >
                      <p>Observatory Status: Nominal</p>
-                     <p>Ref_System: {data.timezone}</p>
+                     {isStatusCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
                    </div>
-                   <p className="opacity-50">Compass is locked to True North (0° Azimuth). Verify local magnetic declination for field use.</p>
+
+                   <AnimatePresence>
+                     {!isStatusCollapsed && (
+                       <motion.div
+                         initial={{ height: 0, opacity: 0 }}
+                         animate={{ height: 'auto', opacity: 1 }}
+                         exit={{ height: 0, opacity: 0 }}
+                         className="space-y-3 overflow-hidden pt-2"
+                       >
+                         <p>Ref_System: {data.timezone}</p>
+                         <p className="opacity-50 border-t border-border-tech/20 pt-2">Compass is locked to True North (0° Azimuth). Verify local magnetic declination for field use.</p>
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
                 </div>
               </section>
 

@@ -17,7 +17,11 @@ body {
 }
 
 .glass {
-  @apply bg-surface-dark border border-border-tech rounded-lg shadow-xl;
+  @apply bg-surface-dark/60 backdrop-blur-md border border-border-tech rounded-lg shadow-xl;
+}
+
+.glass-muted {
+  @apply bg-bg-dark/40 backdrop-blur-sm border border-border-tech/30 rounded;
 }
 
 .label-tech {

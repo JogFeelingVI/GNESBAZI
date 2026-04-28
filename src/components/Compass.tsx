@@ -30,10 +30,6 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
   return (
     <div className={cn("relative flex items-center justify-center pointer-events-none", className)}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
-        {/* Background Grid Lines - Thinner and more subtle for overlay */}
-        <line x1={0} y1={center} x2={size} y2={center} stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
-        <line x1={center} y1={0} x2={center} y2={size} stroke="rgba(255,255,255,0.2)" strokeWidth="0.5" />
-        
         {/* Outer Ring - Glow effect for visibility on varying map backgrounds */}
         <circle
           cx={center}

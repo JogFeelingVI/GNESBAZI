@@ -245,24 +245,14 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
             style={{ transform: `rotate(${magneticDeclination}deg)` }}
           >
             {/* Horizontal Line (MN East-West) */}
-            <div className="w-[100%] h-[1px] bg-white/40 relative shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_West</span>
-              <span className="absolute right-6 top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_East</span>
+            <div className="w-[300%] h-[1.5px] bg-white/40 relative shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+              <span className="absolute left-[35%] top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_West</span>
+              <span className="absolute right-[35%] top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_East</span>
             </div>
             {/* Vertical Line (MN Axis) */}
-            <div className="h-[100%] w-[1px] bg-white/40 absolute flex flex-col justify-between items-center py-6 shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-              <span className="font-mono text-[9px] text-white font-bold uppercase tracking-widest bg-bg-dark/60 px-2 py-0.5 border border-white/20 rounded-sm drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_North</span>
+            <div className="h-[300%] w-[1.5px] bg-white/40 absolute flex flex-col justify-between items-center py-[35%] shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+              <span className="font-mono text-[9px] text-white font-bold uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_North</span>
               <span className="font-mono text-[9px] text-white/90 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_South</span>
-            </div>
-            
-            {/* Center Target Box */}
-            <div className="w-16 h-16 border border-white/30 rounded-sm relative flex items-center justify-center shadow-[0_0_10px_rgba(255,255,255,0.1)]">
-              <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/60"></div>
-              <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/60"></div>
-              <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/60"></div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/60"></div>
-              <div className="w-[1px] h-4 bg-white/60 absolute"></div>
-              <div className="h-[1px] w-4 bg-white/60 absolute"></div>
             </div>
           </div>
         </div>

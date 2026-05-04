@@ -30,15 +30,26 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
   return (
     <div className={cn("relative flex items-center justify-center pointer-events-none", className)}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
+        {/* Background plate for contrast */}
+        <defs>
+          <radialGradient id="compassBg">
+            <stop offset="0%" stopColor="rgba(15, 17, 21, 0.4)" />
+            <stop offset="85%" stopColor="rgba(15, 17, 21, 0.4)" />
+            <stop offset="100%" stopColor="rgba(15, 17, 21, 0)" />
+          </radialGradient>
+        </defs>
+        <circle cx={center} cy={center} r={radius + 30} fill="url(#compassBg)" />
+
         {/* Outer Ring - Glow effect for visibility on varying map backgrounds */}
         <circle
           cx={center}
           cy={center}
           r={radius}
           fill="none"
-          stroke="rgba(0,209,255,0.5)"
-          strokeWidth="2"
-          className="drop-shadow-[0_0_8px_rgba(0,209,255,0.3)]"
+          stroke="#00D1FF"
+          strokeWidth="3"
+          className="drop-shadow-[0_0_12px_rgba(0,209,255,0.6)]"
+          style={{ opacity: 0.8 }}
         />
 
         {/* Direction Labels with stroke for legibility - USING HEX for PNG export consistency */}
@@ -81,8 +92,8 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke={isMajor ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.3)"}
-              strokeWidth={isMajor ? 2 : 1}
+              stroke={isMajor ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.5)"}
+              strokeWidth={isMajor ? 3 : 1.5}
             />
           );
         })}
@@ -118,11 +129,12 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             textAnchor="middle"
             dominantBaseline="middle"
             style={{ 
-              fill: "#10b981", 
-              fontSize: '10px', 
-              fontWeight: 'bold', 
+              fill: "#00FFC2", 
+              fontSize: '11px', 
+              fontWeight: '900', 
               fontFamily: 'monospace',
-              letterSpacing: '0.05em'
+              letterSpacing: '0.05em',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))'
             }}
           >
             MN

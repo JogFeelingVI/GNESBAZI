@@ -177,7 +177,7 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
           zoom={zoom}
           zoomControl={false}
           scrollWheelZoom={true}
-          className="h-full w-full shadow-inner"
+          className="h-full w-full shadow-inner brightness-[0.85] contrast-[1.2]"
         >
           <TileLayer
             attribution='&copy; OpenTopoMap'
@@ -247,14 +247,14 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
             style={{ transform: `rotate(${magneticDeclination}deg)` }}
           >
             {/* Horizontal Line (MN East-West) */}
-            <div className="w-[300%] h-[1.5px] bg-white/40 relative shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-              <span className="absolute left-[35%] top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_West</span>
-              <span className="absolute right-[35%] top-1/2 -translate-y-1/2 font-mono text-[9px] text-white/90 uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_East</span>
+            <div className="w-[300%] h-[2px] bg-white/90 relative shadow-[0_0_12px_rgba(255,255,255,0.5)]">
+              <span className="absolute left-[35%] top-1/2 -translate-y-1/2 font-mono text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_West</span>
+              <span className="absolute right-[35%] top-1/2 -translate-y-1/2 font-mono text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_East</span>
             </div>
             {/* Vertical Line (MN Axis) */}
-            <div className="h-[300%] w-[1.5px] bg-white/40 absolute flex flex-col justify-between items-center py-[35%] shadow-[0_0_8px_rgba(255,255,255,0.3)]">
-              <span className="font-mono text-[9px] text-white font-bold uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_North</span>
-              <span className="font-mono text-[9px] text-white/90 uppercase tracking-widest drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_South</span>
+            <div className="h-[300%] w-[2px] bg-white/90 absolute flex flex-col justify-between items-center py-[35%] shadow-[0_0_12px_rgba(255,255,255,0.5)]">
+              <span className="font-mono text-[10px] text-white font-black uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_North</span>
+              <span className="font-mono text-[10px] text-white font-black uppercase tracking-widest drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_South</span>
             </div>
           </div>
         </div>
@@ -352,20 +352,6 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
               </div>
             </div>
           )}
-        </div>
-
-        <div className="absolute top-4 right-4 z-[1000] flex gap-2">
-          <div className="glass p-1 px-3 border-r-2 border-r-accent-blue">
-            <p className="font-mono text-[8px] text-accent-blue/70 uppercase tracking-[0.2em]">{magneticDeclination > 0 ? '+' : ''}{magneticDeclination.toFixed(1)}° VAR</p>
-          </div>
-        </div>
-
-        <div className="absolute bottom-4 right-4 z-[1000] glass p-1 px-3">
-          <p className="font-mono text-[8px] text-accent-blue uppercase tracking-[0.2em] animate-pulse">Sync: Active_Stream</p>
-        </div>
-
-        <div className="absolute bottom-4 left-4 z-[1000] glass p-1 px-3">
-          <p className="font-mono text-[8px] text-text-muted uppercase tracking-[0.2em]">Map_Ref: OpenTopo_v1.2</p>
         </div>
       </div>
 

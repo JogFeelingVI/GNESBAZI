@@ -52,7 +52,6 @@ export default function App() {
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const [isBaziCollapsed, setIsBaziCollapsed] = useState(false);
   const [isClockCollapsed, setIsClockCollapsed] = useState(false);
-  const [isStatusCollapsed, setIsStatusCollapsed] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('bazi_profile', JSON.stringify(profile));
@@ -432,29 +431,7 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                <div className="glass p-5 text-[10px] font-mono text-text-muted leading-relaxed uppercase space-y-3">
-                   <div 
-                     className="flex justify-between items-center border-l-2 border-accent-blue pl-2 cursor-pointer hover:bg-white/5 transition-colors"
-                     onClick={() => setIsStatusCollapsed(!isStatusCollapsed)}
-                   >
-                     <p>Observatory Status: Nominal</p>
-                     {isStatusCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
-                   </div>
 
-                   <AnimatePresence>
-                     {!isStatusCollapsed && (
-                       <motion.div
-                         initial={{ height: 0, opacity: 0 }}
-                         animate={{ height: 'auto', opacity: 1 }}
-                         exit={{ height: 0, opacity: 0 }}
-                         className="space-y-3 overflow-hidden pt-2"
-                       >
-                         <p>Ref_System: {data.timezone}</p>
-                         <p className="opacity-50 border-t border-border-tech/20 pt-2">Compass is locked to True North (0° Azimuth). Verify local magnetic declination for field use.</p>
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
-                </div>
               </section>
 
               {/* Center Main: Integrated Map & Compass */}
@@ -475,14 +452,13 @@ export default function App() {
 
         <footer className="pt-6 flex justify-between text-[10px] font-mono text-text-muted border-t border-border-tech">
           <div className="space-x-4">
-            <span>REF_LINK: ESTABLISHED (WGS-84)</span>
             {data && data.location.bazi.year && (
               <span className="text-accent-blue font-bold">
                 BAZI: {data.location.bazi.year}年 {data.location.bazi.month}月 {data.location.bazi.day}日 {data.location.bazi.hour}时
               </span>
             )}
           </div>
-          <span>HUD_VERSION: 1.4.0-STABLE</span>
+
           <span>SESSION_EPOCH: {new Date().toISOString()}</span>
         </footer>
 

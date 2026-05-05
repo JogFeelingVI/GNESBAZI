@@ -33,8 +33,8 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
         {/* Background plate for contrast */}
         <defs>
           <radialGradient id="compassBg">
-            <stop offset="0%" stopColor="rgba(15, 17, 21, 0.4)" />
-            <stop offset="85%" stopColor="rgba(15, 17, 21, 0.4)" />
+            <stop offset="0%" stopColor="rgba(15, 17, 21, 0.25)" />
+            <stop offset="85%" stopColor="rgba(15, 17, 21, 0.25)" />
             <stop offset="100%" stopColor="rgba(15, 17, 21, 0)" />
           </radialGradient>
         </defs>

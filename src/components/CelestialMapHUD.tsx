@@ -2,9 +2,10 @@ import React, { useCallback, useRef, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { toPng } from 'html-to-image';
-import { Download, Target, ZoomIn, ZoomOut, Crosshair, ChevronDown, ChevronUp } from 'lucide-react';
+import { Download, Target, ZoomIn, ZoomOut, Crosshair, ChevronDown, ChevronUp, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Compass from './Compass';
+import { MapMarker } from '../App';
 
 // Fix for default marker icons in Leaflet - Observer (Blue)
 const BlueIcon = L.icon({
@@ -24,11 +25,25 @@ const TargetIcon = L.icon({
   shadowSize: [41, 41]
 });
 
+// Custom Gold Icon for Marks
+const GoldIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  shadowSize: [41, 41]
+});
+
 L.Marker.prototype.options.icon = BlueIcon; // Set default to blue
 
 interface CelestialMapHUDProps {
   lat: number;
   lng: number;
+  markers: MapMarker[];
+  setLat: (lat: number) => void;
+  setLng: (lng: number) => void;
+  setInputLat: (val: string) => void;
+  setInputLng: (val: string) => void;
   sunAzimuth: number;
   moonAzimuth: number;
   magneticDeclination: number;
@@ -46,7 +61,11 @@ interface TargetPoint {
 const SetMapState: React.FC<{ lat: number; lng: number; zoom: number }> = ({ lat, lng, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng], zoom, { animate: true });
+    const center = map.getCenter();
+    const isSame = Math.abs(center.lat - lat) < 0.0001 && Math.abs(center.lng - lng) < 0.0001;
+    if (!isSame) {
+      map.setView([lat, lng], zoom, { animate: true });
+    }
   }, [lat, lng, zoom, map]);
   return null;
 };
@@ -78,16 +97,28 @@ const calculateBearing = (lat1: number, lon1: number, lat2: number, lon2: number
   return (θ * 180 / Math.PI + 360) % 360; // range [0, 360]
 };
 
-const MapEvents: React.FC<{ onMapClick: (lat: number, lng: number) => void }> = ({ onMapClick }) => {
+const MapEvents: React.FC<{ onMapMove: (lat: number, lng: number) => void }> = ({ onMapMove }) => {
   useMapEvents({
-    click: (e) => {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+    moveend: (e) => {
+      const center = e.target.getCenter();
+      onMapMove(center.lat, center.lng);
     },
   });
   return null;
 };
 
-const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth, moonAzimuth, magneticDeclination }) => {
+const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ 
+  lat, 
+  lng, 
+  markers, 
+  setLat, 
+  setLng, 
+  setInputLat, 
+  setInputLng, 
+  sunAzimuth, 
+  moonAzimuth, 
+  magneticDeclination 
+}) => {
   const hudRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(12);
   const [target, setTarget] = useState<TargetPoint | null>(null);
@@ -129,36 +160,11 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
     }
   }, [lat, lng]);
 
-  const handleMapClick = async (tLat: number, tLng: number) => {
-    const distance = calculateDistance(lat, lng, tLat, tLng);
-    const bearing = calculateBearing(lat, lng, tLat, tLng);
-    
-    setTarget({
-      lat: tLat,
-      lng: tLng,
-      alt: null,
-      distance,
-      bearing,
-      elevationAngle: null
-    });
-
-    try {
-      const response = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${tLat},${tLng}`);
-      if (response.ok) {
-        const data = await response.json();
-        const alt = data.results[0].elevation;
-        
-        let elAngle = null;
-        if (observerAlt !== null) {
-          const altDiff = alt - observerAlt;
-          elAngle = Math.atan2(altDiff, distance) * 180 / Math.PI;
-        }
-
-        setTarget(prev => prev ? { ...prev, alt, elevationAngle: elAngle } : null);
-      }
-    } catch (e) {
-      console.log('Target elevation fetch failed');
-    }
+  const handleMapMove = (nLat: number, nLng: number) => {
+    setLat(nLat);
+    setLng(nLng);
+    setInputLat(nLat.toFixed(4));
+    setInputLng(nLng.toFixed(4));
   };
 
   const clearTarget = () => setTarget(null);
@@ -185,60 +191,23 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
             crossOrigin="anonymous"
             maxZoom={17}
           />
+          
+          {/* Marked Locations */}
+          {markers.map(m => (
+            <Marker key={m.id} position={[m.lat, m.lng]} icon={GoldIcon} />
+          ))}
+
           <Marker position={[lat, lng]} icon={BlueIcon} />
-          {target && (
-            <>
-              <Marker position={[target.lat, target.lng]} icon={TargetIcon} />
-              {/* Gradient Dashed Line Implementation */}
-              {(() => {
-                const segments = 10;
-                const lines = [];
-                for (let i = 0; i < segments; i++) {
-                  const t1 = i / segments;
-                  const t2 = (i + 1) / segments;
-                  
-                  const p1: [number, number] = [
-                    lat + (target.lat - lat) * t1,
-                    lng + (target.lng - lng) * t1
-                  ];
-                  const p2: [number, number] = [
-                    lat + (target.lat - lat) * t2,
-                    lng + (target.lng - lng) * t2
-                  ];
-
-                  // Color interpolation: Blue (0, 209, 255) -> Red (239, 68, 68)
-                  const r = Math.round(0 + (239 - 0) * t1);
-                  const g = Math.round(209 + (68 - 209) * t1);
-                  const b = Math.round(255 + (68 - 255) * t1);
-                  const color = `rgb(${r}, ${g}, ${b})`;
-
-                  lines.push(
-                    <Polyline 
-                      key={`seg-${i}`}
-                      positions={[p1, p2]}
-                      pathOptions={{ 
-                        color: color, 
-                        dashArray: '10, 10', 
-                        weight: 3, 
-                        opacity: 0.8,
-                        lineCap: 'round'
-                      }} 
-                    />
-                  );
-                }
-                return lines;
-              })()}
-            </>
-          )}
           <SetMapState lat={lat} lng={lng} zoom={zoom} />
-          <MapEvents onMapClick={handleMapClick} />
+          <MapEvents onMapMove={handleMapMove} />
         </MapContainer>
 
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[500]">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[500] mix-blend-difference">
           <Compass 
             sunAzimuth={sunAzimuth} 
             moonAzimuth={moonAzimuth} 
             magneticDeclination={magneticDeclination}
+            rotation={-magneticDeclination}
           />
           
           {/* HUD Crosshair - Aligned with Magnetic North (MN) */}
@@ -248,8 +217,6 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
           >
             {/* Horizontal Line (MN East-West) */}
             <div className="w-[300%] h-[2px] bg-white/90 relative shadow-[0_0_12px_rgba(255,255,255,0.5)]">
-              <span className="absolute left-[35%] top-1/2 -translate-y-1/2 font-mono text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_West</span>
-              <span className="absolute right-[35%] top-1/2 -translate-y-1/2 font-mono text-[10px] text-white font-black uppercase tracking-widest whitespace-nowrap drop-shadow-[0_2px_4px_rgba(0,0,0,1)]" style={{ transform: `rotate(${-magneticDeclination}deg)` }}>Mag_East</span>
             </div>
             {/* Vertical Line (MN Axis) */}
             <div className="h-[300%] w-[2px] bg-white/90 absolute flex flex-col justify-between items-center py-[35%] shadow-[0_0_12px_rgba(255,255,255,0.5)]">
@@ -348,7 +315,7 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({ lat, lng, sunAzimuth,
             <div className="border-t border-border-tech/30 pt-2 animate-pulse">
               <p className="text-[8px] opacity-40 uppercase">Scanning Terrain...</p>
               <div className="mt-2 text-[10px] text-text-muted italic leading-tight">
-                Click map to designate custom coordinate
+                Align crosshair with center and click "Mark" in sidebar
               </div>
             </div>
           )}

@@ -8,10 +8,11 @@ interface CompassProps {
   sunAzimuth: number;
   moonAzimuth: number;
   magneticDeclination: number;
+  rotation?: number;
   className?: string;
 }
 
-const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDeclination, className }) => {
+const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDeclination, rotation = 0, className }) => {
   const directions = [
     { label: 'N', angle: 0 },
     { label: 'NE', angle: 45 },
@@ -25,37 +26,42 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
 
   const size = 320;
   const center = size / 2;
-  const radius = center - 55;
+  const radius = center - 35; // Enlarged from center - 55
+  const squareScale = 2.2;
 
   return (
     <div className={cn("relative flex items-center justify-center pointer-events-none", className)}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="overflow-visible">
-        {/* Background plate for contrast */}
-        <defs>
-          <radialGradient id="compassBg">
-            <stop offset="0%" stopColor="rgba(15, 17, 21, 0.25)" />
-            <stop offset="85%" stopColor="rgba(15, 17, 21, 0.25)" />
-            <stop offset="100%" stopColor="rgba(15, 17, 21, 0)" />
-          </radialGradient>
-        </defs>
-        <circle cx={center} cy={center} r={radius + 30} fill="url(#compassBg)" />
+      <motion.svg 
+        width={size} 
+        height={size} 
+        viewBox={`0 0 ${size} ${size}`} 
+        className="overflow-visible"
+        animate={{ rotate: -rotation }}
+        transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+      >
+        {/* Square Frame from User - Centered and now rotates with SVG */}
+        <g transform={`translate(${center}, ${center}) scale(${squareScale})`}>
+          <g transform="translate(-133, -150)">
+            <g>
+              <g style={{ opacity: 0.4, fill: '#ff4444', fillOpacity: 1 }} transform="translate(-7.7081787e-5,-0.75464094)">
+                <path d="m 86.231946,209.8244 v -3.77341 h -8.113717 v -8.11372 h -3.77393 v 11.88713 z" />
+                <path d="m 180.57761,206.05099 v 3.77341 h 11.88764 v -11.88713 h -3.77393 v 8.11372 z" />
+                <path d="m 180.57761,91.703963 v 3.77393 h 8.11371 v 8.113717 h 3.77393 V 91.703963 Z" />
+                <path d="m 74.344299,103.59161 h 3.77393 v -8.113717 h 8.113717 v -3.77393 H 74.344299 Z" />
+              </g>
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="m 78.118151,102.83697 v 94.34566" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="M 86.231869,94.72325 H 180.57753" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="m 188.69124,102.83697 v 94.34566" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="M 86.231869,205.29635 H 180.57753" />
+            </g>
+          </g>
+        </g>
 
-        {/* Outer Ring - Glow effect for visibility on varying map backgrounds */}
-        <circle
-          cx={center}
-          cy={center}
-          r={radius}
-          fill="none"
-          stroke="#00D1FF"
-          strokeWidth="3"
-          className="drop-shadow-[0_0_12px_rgba(0,209,255,0.6)]"
-          style={{ opacity: 0.8 }}
-        />
-
-        {/* Direction Labels with stroke for legibility - USING HEX for PNG export consistency */}
+        {/* Direction Labels with stroke for legibility */}
         {directions.map((dir) => {
-          const x = center + (radius + 20) * Math.sin((dir.angle * Math.PI) / 180);
-          const y = center - (radius + 20) * Math.cos((dir.angle * Math.PI) / 180);
+          const labelDist = radius + 20;
+          const x = center + labelDist * Math.sin((dir.angle * Math.PI) / 180);
+          const y = center - labelDist * Math.cos((dir.angle * Math.PI) / 180);
           return (
             <text
               key={dir.label}
@@ -65,10 +71,12 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
               alignmentBaseline="middle"
               style={{ 
                 fill: dir.angle === 0 ? "#FF4444" : "#FFFFFF",
-                fontSize: '12px',
-                fontWeight: 'bold',
+                fontSize: dir.angle % 90 === 0 ? '14px' : '10px',
+                fontWeight: '900',
                 fontFamily: 'monospace',
-                filter: 'drop-shadow(0px 0px 2px rgba(0,0,0,1))'
+                filter: 'drop-shadow(0px 0px 3px rgba(0,0,0,1))',
+                transformBox: 'fill-box',
+                transformOrigin: 'center'
               }}
             >
               {dir.label}
@@ -98,39 +106,29 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
           );
         })}
 
-        {/* Magnetic North Indicator */}
-        <g transform={`rotate(${magneticDeclination}, ${center}, ${center})`}>
+        {/* Magnetic North Indicator - Always at the top relative to the rotating square dial */}
+        <g>
           <line
             x1={center}
             y1={center}
             x2={center}
-            y2={center - radius + 15}
+            y2={center - radius + 5}
             stroke="#10b981"
-            strokeWidth={1.5}
+            strokeWidth={2}
             strokeDasharray="3 2"
           />
           <path
-            d={`M ${center - 6} ${center - radius + 5} L ${center} ${center - radius - 5} L ${center + 6} ${center - radius + 5} Z`}
+            d={`M ${center - 8} ${center - radius + 10} L ${center} ${center - radius - 5} L ${center + 8} ${center - radius + 10} Z`}
             fill="#10b981"
-          />
-          <rect
-            x={center - 12}
-            y={center - radius - 24}
-            width={24}
-            height={14}
-            fill="#0F1115"
-            stroke="#10b981"
-            strokeWidth={1}
-            rx={2}
           />
           <text
             x={center}
-            y={center - radius - 17}
+            y={center - radius - 20}
             textAnchor="middle"
             dominantBaseline="middle"
             style={{ 
               fill: "#00FFC2", 
-              fontSize: '11px', 
+              fontSize: '12px', 
               fontWeight: '900', 
               fontFamily: 'monospace',
               letterSpacing: '0.05em',
@@ -145,8 +143,8 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
         <circle cx={center} cy={center} r={4} fill="#0F1115" stroke="#00D1FF" strokeWidth="1.5" />
         <circle cx={center} cy={center} r={1.5} fill="#00D1FF" />
 
-        {/* Sun Indicator - Fixed rotation and origin for better export support */}
-        <g transform={`rotate(${sunAzimuth}, ${center}, ${center})`}>
+        {/* Sun Indicator - Adjusted for global SVG rotation to stay relative to True North */}
+        <g transform={`rotate(${sunAzimuth + rotation}, ${center}, ${center})`}>
           <line
             x1={center}
             y1={center}
@@ -162,14 +160,20 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             y={center - radius - 20} 
             textAnchor="middle" 
             dominantBaseline="middle" 
-            style={{ fontSize: '24px', filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
+            style={{ 
+              fontSize: '24px', 
+              filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
+              transform: `rotate(${-rotation}deg)`,
+              transformBox: 'fill-box',
+              transformOrigin: 'center'
+            }}
           >
             ☀️
           </text>
         </g>
 
-        {/* Moon Indicator */}
-        <g transform={`rotate(${moonAzimuth}, ${center}, ${center})`}>
+        {/* Moon Indicator - Adjusted for global SVG rotation */}
+        <g transform={`rotate(${moonAzimuth + rotation}, ${center}, ${center})`}>
           <line
             x1={center}
             y1={center}
@@ -186,12 +190,18 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
             y={center - radius - 20} 
             textAnchor="middle" 
             dominantBaseline="middle" 
-            style={{ fontSize: '22px', filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))' }}
+            style={{ 
+              fontSize: '22px', 
+              filter: 'drop-shadow(0 0 4px rgba(0,0,0,0.5))',
+              transform: `rotate(${-rotation}deg)`,
+              transformBox: 'fill-box',
+              transformOrigin: 'center'
+            }}
           >
             🌙
           </text>
         </g>
-      </svg>
+      </motion.svg>
     </div>
   );
 };

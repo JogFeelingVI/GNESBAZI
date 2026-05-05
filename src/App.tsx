@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MapPin, Globe, Loader2, Navigation, Clock, User, Sparkles, Copy, Check, X, History, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Navigation, Clock, Sparkles, Copy, Check, X, ChevronDown, ChevronUp, MapPin, Trash2, Undo2, Bookmark } from 'lucide-react';
 import Compass from './components/Compass';
 import AstroData from './components/AstroData';
 import { getCelestialData, CelestialData } from './lib/astronomy';
@@ -10,11 +10,11 @@ import { Solar } from 'lunar-javascript';
 
 import CelestialMapHUD from './components/CelestialMapHUD';
 
-interface LocationHistory {
+export interface MapMarker {
+  id: string;
   lat: number;
   lng: number;
   timestamp: number;
-  id: string;
 }
 
 export default function App() {
@@ -28,10 +28,13 @@ export default function App() {
   const [showBaziModal, setShowBaziModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState<LocationHistory[]>(() => {
-    const saved = localStorage.getItem('location_history');
+
+  const [markers, setMarkers] = useState<MapMarker[]>(() => {
+    const saved = localStorage.getItem('celestial_markers');
     return saved ? JSON.parse(saved) : [];
   });
+  const [lastRemovedMarker, setLastRemovedMarker] = useState<MapMarker | null>(null);
+  const [isMarkersCollapsed, setIsMarkersCollapsed] = useState(false);
 
   const [profile, setProfile] = useState<BaziProfile>(() => {
     const saved = localStorage.getItem('bazi_profile');
@@ -49,7 +52,6 @@ export default function App() {
   });
 
   const [isTargetParamsCollapsed, setIsTargetParamsCollapsed] = useState(false);
-  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const [isBaziCollapsed, setIsBaziCollapsed] = useState(false);
   const [isClockCollapsed, setIsClockCollapsed] = useState(false);
 
@@ -58,35 +60,32 @@ export default function App() {
   }, [profile]);
 
   useEffect(() => {
-    localStorage.setItem('location_history', JSON.stringify(history));
-  }, [history]);
+    localStorage.setItem('celestial_markers', JSON.stringify(markers));
+  }, [markers]);
 
-  const addToHistory = (latitude: number, longitude: number) => {
-    const newEntry: LocationHistory = {
-      lat: latitude,
-      lng: longitude,
-      timestamp: Date.now(),
-      id: `${latitude}-${longitude}`
+  const addMarker = () => {
+    const newMarker: MapMarker = {
+      id: Date.now().toString(),
+      lat,
+      lng,
+      timestamp: Date.now()
     };
-
-    setHistory(prev => {
-      // Avoid duplicates
-      const filtered = prev.filter(h => h.id !== newEntry.id);
-      const updated = [newEntry, ...filtered].slice(0, 10); // Keep last 10
-      return updated;
-    });
+    setMarkers(prev => [newMarker, ...prev]);
   };
 
-  const removeFromHistory = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setHistory(prev => prev.filter(h => h.id !== id));
+  const removeMarker = (id: string) => {
+    const marker = markers.find(m => m.id === id);
+    if (marker) {
+      setLastRemovedMarker(marker);
+      setMarkers(prev => prev.filter(m => m.id !== id));
+    }
   };
 
-  const selectFromHistory = (h: LocationHistory) => {
-    setLat(h.lat);
-    setLng(h.lng);
-    setInputLat(h.lat.toString());
-    setInputLng(h.lng.toString());
+  const undoRemove = () => {
+    if (lastRemovedMarker) {
+      setMarkers(prev => [lastRemovedMarker, ...prev]);
+      setLastRemovedMarker(null);
+    }
   };
 
   const handleGeneratePrompt = () => {
@@ -144,7 +143,6 @@ export default function App() {
     if (!isNaN(newLat) && !isNaN(newLng)) {
       setLat(newLat);
       setLng(newLng);
-      addToHistory(newLat, newLng);
     }
   };
 
@@ -157,7 +155,6 @@ export default function App() {
         setLng(longitude);
         setInputLat(latitude.toString());
         setInputLng(longitude.toString());
-        addToHistory(latitude, longitude);
         setIsLoading(false);
       }, (error) => {
         console.error(error);
@@ -262,54 +259,81 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                {history.length > 0 && (
-                  <div className="glass p-5 space-y-4">
-                    <div 
-                      className="flex justify-between items-center border-l-2 border-emerald-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
-                      onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-                    >
-                      <p className="label-tech">Recent Vectors</p>
-                      {isHistoryCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
+                <div className="glass p-5 space-y-4">
+                  <div 
+                    className="flex justify-between items-center border-l-2 border-yellow-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
+                    onClick={() => setIsMarkersCollapsed(!isMarkersCollapsed)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Bookmark size={14} className="text-yellow-500" />
+                      <p className="label-tech">Marked Sites</p>
                     </div>
-                    
-                    <AnimatePresence>
-                      {!isHistoryCollapsed && (
-                        <motion.div 
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          className="space-y-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar overflow-hidden pl-2"
+                    <div className="flex items-center gap-2">
+                       {lastRemovedMarker && (
+                         <button 
+                           onClick={(e) => { e.stopPropagation(); undoRemove(); }}
+                           className="text-[9px] text-accent-blue hover:underline uppercase tracking-tighter flex items-center gap-1"
+                         >
+                           <Undo2 size={10} /> Undo
+                         </button>
+                       )}
+                       {isMarkersCollapsed ? <ChevronDown size={14} className="opacity-50" /> : <ChevronUp size={14} className="opacity-50" />}
+                    </div>
+                  </div>
+                  
+                  <AnimatePresence>
+                    {!isMarkersCollapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-2 overflow-hidden pl-2"
+                      >
+                        <button
+                          onClick={addMarker}
+                          className="w-full py-2 bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-[9px] font-bold uppercase tracking-widest hover:bg-yellow-500 hover:text-bg-dark transition-all flex items-center justify-center gap-2 mb-2"
                         >
-                          {history.map((h) => (
+                          <Bookmark size={12} />
+                          Mark Current Center
+                        </button>
+
+                        <div className="space-y-1 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                          {markers.length === 0 ? (
+                            <p className="text-[9px] text-text-muted italic text-center py-2">No marked locations</p>
+                          ) : markers.map((m) => (
                             <div 
-                              key={h.id}
-                              onClick={() => selectFromHistory(h)}
-                              className={cn(
-                                "group flex items-center justify-between p-2 rounded border border-border-tech/40 hover:border-accent-blue/50 hover:bg-accent-blue/5 transition-all cursor-pointer",
-                                lat === h.lat && lng === h.lng ? "border-accent-blue/50 bg-accent-blue/5" : ""
-                              )}
+                              key={m.id}
+                              className="group flex items-center justify-between p-2 rounded border border-border-tech/40 hover:border-yellow-500/50 hover:bg-yellow-500/5 transition-all"
                             >
-                              <div className="flex flex-col gap-0.5">
+                              <div 
+                                className="flex flex-col gap-0.5 cursor-pointer flex-1"
+                                onClick={() => {
+                                  setLat(m.lat);
+                                  setLng(m.lng);
+                                  setInputLat(m.lat.toFixed(4));
+                                  setInputLng(m.lng.toFixed(4));
+                                }}
+                              >
                                 <span className="font-mono text-[10px] text-white">
-                                  {h.lat.toFixed(4)}°, {h.lng.toFixed(4)}°
+                                  {m.lat.toFixed(4)}°, {m.lng.toFixed(4)}°
                                 </span>
                                 <span className="text-[8px] opacity-40 uppercase tracking-widest">
-                                  {new Date(h.timestamp).toLocaleDateString()}
+                                  {new Date(m.timestamp).toLocaleTimeString()}
                                 </span>
                               </div>
                               <button
-                                onClick={(e) => removeFromHistory(h.id, e)}
+                                onClick={() => removeMarker(m.id)}
                                 className="p-1.5 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
                               >
                                 <Trash2 size={12} />
                               </button>
                             </div>
                           ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 <div className="glass p-5 space-y-4">
                   <div 
@@ -439,6 +463,11 @@ export default function App() {
                 <CelestialMapHUD 
                   lat={lat} 
                   lng={lng} 
+                  markers={markers}
+                  setLat={setLat}
+                  setLng={setLng}
+                  setInputLat={setInputLat}
+                  setInputLng={setInputLng}
                   sunAzimuth={data.sun.azimuth} 
                   moonAzimuth={data.moon.azimuth} 
                   magneticDeclination={data.location.magneticDeclination}

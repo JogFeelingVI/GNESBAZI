@@ -15,6 +15,7 @@ export interface MapMarker {
   lat: number;
   lng: number;
   timestamp: number;
+  elevation?: number | null;
 }
 
 export default function App() {
@@ -63,14 +64,29 @@ export default function App() {
     localStorage.setItem('celestial_markers', JSON.stringify(markers));
   }, [markers]);
 
-  const addMarker = () => {
+  const addMarker = async () => {
     const newMarker: MapMarker = {
       id: Date.now().toString(),
       lat,
       lng,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      elevation: null
     };
+    
+    // Optimistically add
     setMarkers(prev => [newMarker, ...prev]);
+
+    // Fetch elevation
+    try {
+      const response = await fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lng}`);
+      if (response.ok) {
+        const data = await response.json();
+        const elevation = data.results[0].elevation;
+        setMarkers(prev => prev.map(m => m.id === newMarker.id ? { ...m, elevation } : m));
+      }
+    } catch (e) {
+      console.error('Failed to fetch elevation for marker', e);
+    }
   };
 
   const removeMarker = (id: string) => {
@@ -138,11 +154,19 @@ export default function App() {
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
-    const newLat = parseFloat(inputLat);
-    const newLng = parseFloat(inputLng);
-    if (!isNaN(newLat) && !isNaN(newLng)) {
-      setLat(newLat);
-      setLng(newLng);
+    const rawLat = parseFloat(inputLat);
+    const rawLng = parseFloat(inputLng);
+    
+    if (!isNaN(rawLat) && !isNaN(rawLng)) {
+      // Use Leaflet's LatLng to wrap/clamp if L is available or use manual clamp/wrap
+      // Latitude [-90, 90], Longitude [-180, 180]
+      const finalLat = Math.max(-90, Math.min(90, rawLat));
+      const finalLng = ((rawLng + 180) % 360 + 360) % 360 - 180;
+      
+      setLat(finalLat);
+      setLng(finalLng);
+      setInputLat(finalLat.toFixed(4));
+      setInputLng(finalLng.toFixed(4));
     }
   };
 
@@ -317,9 +341,16 @@ export default function App() {
                                 <span className="font-mono text-[10px] text-white">
                                   {m.lat.toFixed(4)}°, {m.lng.toFixed(4)}°
                                 </span>
-                                <span className="text-[8px] opacity-40 uppercase tracking-widest">
-                                  {new Date(m.timestamp).toLocaleTimeString()}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[8px] opacity-40 uppercase tracking-widest">
+                                    {new Date(m.timestamp).toLocaleTimeString()}
+                                  </span>
+                                  {m.elevation !== undefined && (
+                                    <span className="text-[8px] text-yellow-500/80 font-mono">
+                                      ALT: {m.elevation !== null ? `${m.elevation.toFixed(0)}m` : '...'}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <button
                                 onClick={() => removeMarker(m.id)}
@@ -471,6 +502,7 @@ export default function App() {
                   sunAzimuth={data.sun.azimuth} 
                   moonAzimuth={data.moon.azimuth} 
                   magneticDeclination={data.location.magneticDeclination}
+                  onMark={addMarker}
                 />
                 
                 <AstroData data={data} />

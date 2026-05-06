@@ -43,16 +43,16 @@ const Compass: React.FC<CompassProps> = ({ sunAzimuth, moonAzimuth, magneticDecl
         <g transform={`translate(${center}, ${center}) scale(${squareScale})`}>
           <g transform="translate(-133, -150)">
             <g>
-              <g style={{ opacity: 0.4, fill: '#ff4444', fillOpacity: 1 }} transform="translate(-7.7081787e-5,-0.75464094)">
+              <g style={{ opacity: 0.75, fill: '#ff4444', fillOpacity: 1 }} transform="translate(-7.7081787e-5,-0.75464094)">
                 <path d="m 86.231946,209.8244 v -3.77341 h -8.113717 v -8.11372 h -3.77393 v 11.88713 z" />
                 <path d="m 180.57761,206.05099 v 3.77341 h 11.88764 v -11.88713 h -3.77393 v 8.11372 z" />
                 <path d="m 180.57761,91.703963 v 3.77393 h 8.11371 v 8.113717 h 3.77393 V 91.703963 Z" />
                 <path d="m 74.344299,103.59161 h 3.77393 v -8.113717 h 8.113717 v -3.77393 H 74.344299 Z" />
               </g>
-              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="m 78.118151,102.83697 v 94.34566" />
-              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="M 86.231869,94.72325 H 180.57753" />
-              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="m 188.69124,102.83697 v 94.34566" />
-              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.3 }} d="M 86.231869,205.29635 H 180.57753" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.75 }} d="m 78.118151,102.83697 v 94.34566" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.75 }} d="M 86.231869,94.72325 H 180.57753" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.75 }} d="m 188.69124,102.83697 v 94.34566" />
+              <path style={{ fill: 'none', stroke: '#ff4444', strokeWidth: 0.2, strokeDasharray: '1, 3', opacity: 0.75 }} d="M 86.231869,205.29635 H 180.57753" />
             </g>
           </g>
         </g>

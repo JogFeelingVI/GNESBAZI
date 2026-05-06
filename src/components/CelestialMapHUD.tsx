@@ -47,6 +47,7 @@ interface CelestialMapHUDProps {
   sunAzimuth: number;
   moonAzimuth: number;
   magneticDeclination: number;
+  onMark: () => void;
 }
 
 interface TargetPoint {
@@ -117,7 +118,8 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
   setInputLng, 
   sunAzimuth, 
   moonAzimuth, 
-  magneticDeclination 
+  magneticDeclination,
+  onMark
 }) => {
   const hudRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(12);
@@ -161,10 +163,15 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
   }, [lat, lng]);
 
   const handleMapMove = (nLat: number, nLng: number) => {
-    setLat(nLat);
-    setLng(nLng);
-    setInputLat(nLat.toFixed(4));
-    setInputLng(nLng.toFixed(4));
+    // Normalize coordinates for tz-lookup and other calculations
+    const wrapped = L.latLng(nLat, nLng).wrap();
+    const finalLat = wrapped.lat;
+    const finalLng = wrapped.lng;
+
+    setLat(finalLat);
+    setLng(finalLng);
+    setInputLat(finalLat.toFixed(4));
+    setInputLng(finalLng.toFixed(4));
   };
 
   const clearTarget = () => setTarget(null);
@@ -314,9 +321,12 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
           ) : (
             <div className="border-t border-border-tech/30 pt-2 animate-pulse">
               <p className="text-[8px] opacity-40 uppercase">Scanning Terrain...</p>
-              <div className="mt-2 text-[10px] text-text-muted italic leading-tight">
-                Align crosshair with center and click "Mark" in sidebar
-              </div>
+              <button 
+                onClick={onMark}
+                className="mt-2 text-[10px] text-accent-blue hover:text-white italic leading-tight text-left transition-colors cursor-pointer block select-none group underline decoration-accent-blue/30 group-hover:decoration-white font-bold uppercase tracking-tighter"
+              >
+                Click here to mark
+              </button>
             </div>
           )}
         </div>

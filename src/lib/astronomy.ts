@@ -32,12 +32,17 @@ export interface CelestialData {
 }
 
 export function getCelestialData(lat: number, lng: number, date: Date = new Date()): CelestialData {
-  const timezone = tzlookup(lat, lng);
+  // Clamp latitude to [-90, 90] and wrap longitude to [-180, 180]
+  // to avoid crashes in library functions like tzlookup
+  const safeLat = Math.max(-90, Math.min(90, lat || 0));
+  const safeLng = (((lng || 0) + 180) % 360 + 360) % 360 - 180;
+
+  const timezone = tzlookup(safeLat, safeLng);
   const localDateTime = DateTime.fromJSDate(date).setZone(timezone);
 
-  const sunTimes = SunCalc.getTimes(date, lat, lng);
-  const sunPos = SunCalc.getPosition(date, lat, lng);
-  const moonPos = SunCalc.getMoonPosition(date, lat, lng);
+  const sunTimes = SunCalc.getTimes(date, safeLat, safeLng);
+  const sunPos = SunCalc.getPosition(date, safeLat, safeLng);
+  const moonPos = SunCalc.getMoonPosition(date, safeLat, safeLng);
   const moonIllum = SunCalc.getMoonIllumination(date);
 
   // Magnetic Declination
@@ -49,7 +54,7 @@ export function getCelestialData(lat: number, lng: number, date: Date = new Date
     if (typeof modelFn === 'function') {
       const model = modelFn(date);
       if (model && typeof model.point === 'function') {
-        const info = model.point([lat, lng]);
+        const info = model.point([safeLat, safeLng]);
         magneticDeclination = info?.decl || 0;
       }
     }
@@ -59,7 +64,7 @@ export function getCelestialData(lat: number, lng: number, date: Date = new Date
       const g: any = geomag;
       const fieldFn = g.field || g.default?.field;
       if (typeof fieldFn === 'function') {
-        const info = fieldFn(lat, lng);
+        const info = fieldFn(safeLat, safeLng);
         magneticDeclination = info?.declination || 0;
       }
     }
@@ -70,7 +75,7 @@ export function getCelestialData(lat: number, lng: number, date: Date = new Date
       const g: any = geomag;
       const fieldFn = g.field || g.default?.field;
       if (typeof fieldFn === 'function') {
-        const info = fieldFn(lat, lng);
+        const info = fieldFn(safeLat, safeLng);
         magneticDeclination = info?.declination || 0;
       }
     } catch (e2) {

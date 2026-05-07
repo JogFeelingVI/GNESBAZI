@@ -208,15 +208,25 @@ export default function App() {
             <span className="label-tech opacity-50">Geospatial Observer v1.3.1</span>
             <h1 className="text-3xl font-light tracking-tighter">Celestial & Horizon Analytics</h1>
           </div>
-          <div className="hidden md:flex space-x-10 text-right">
-            <div>
-              <p className="label-tech">Active Vector</p>
-              <p className="font-mono text-sm text-accent-blue">{lat.toFixed(4)}° N, {lng.toFixed(4)}° E</p>
-            </div>
-            <div>
-              <p className="label-tech">Timezone Profile</p>
-              <p className="font-mono text-sm text-accent-blue truncate max-w-[140px] font-bold">{data?.timezone || 'SYNCING...'}</p>
-            </div>
+          <div className="hidden md:flex space-x-10 text-right items-end">
+            {data && (
+              <div className="flex items-center gap-6">
+                <div>
+                  <p className="label-tech opacity-40">Local Epoch</p>
+                  <p className="font-mono text-2xl font-black text-accent-blue tracking-tighter leading-none">
+                    {data.localTime.split(' ')[1]}
+                  </p>
+                </div>
+                {data.location.bazi.year && (
+                  <div className="text-right border-l border-border-tech/30 pl-6">
+                    <p className="label-tech opacity-40">Chronos Alignment</p>
+                    <p className="text-2xl font-mono font-black text-amber-400 tracking-tighter leading-none uppercase">
+                      {data.location.bazi.year} {data.location.bazi.month} {data.location.bazi.day} {data.location.bazi.hour}时
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </header>
 
@@ -461,42 +471,7 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                <div className="glass p-5 space-y-3">
-                  <div 
-                    className="flex justify-between items-center border-l-2 border-purple-500 pl-2 cursor-pointer hover:bg-white/5 transition-colors"
-                    onClick={() => setIsClockCollapsed(!isClockCollapsed)}
-                  >
-                    <p className="text-[10px] font-black uppercase tracking-tighter opacity-50 font-mono">Local Epoch</p>
-                    {isClockCollapsed ? <ChevronDown size={14} className="text-accent-blue/50" /> : <ChevronUp size={14} className="text-accent-blue/50" />}
-                  </div>
 
-                  <AnimatePresence>
-                    {!isClockCollapsed && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="flex justify-between items-center overflow-hidden pl-2"
-                      >
-                        <div className="space-y-1">
-                          <p className="text-3xl font-black font-mono text-accent-blue tracking-tighter">
-                            {data.localTime.split(' ')[1]}
-                          </p>
-                          <div className="pt-1 mt-1 border-t border-border-tech/30">
-                            {data.location.bazi.year && (
-                              <p className="text-[11px] font-mono font-bold text-white/90 tracking-tight">
-                                {data.location.bazi.year} {data.location.bazi.month} {data.location.bazi.day} {data.location.bazi.hour}时
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="p-2 bg-accent-blue/10 rounded-full border border-accent-blue/20">
-                          <Clock size={24} className="text-accent-blue animate-pulse" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
 
 
               </section>
@@ -532,7 +507,7 @@ export default function App() {
             )}
           </div>
 
-          <span>BUILD_REV: 20260507.0150</span>
+          <span>BUILD_REV: 20260507.0716</span>
         </footer>
 
         {/* Prompt Modal */}

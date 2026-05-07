@@ -56,6 +56,18 @@ export default function App() {
   const [isBaziCollapsed, setIsBaziCollapsed] = useState(false);
   const [isClockCollapsed, setIsClockCollapsed] = useState(false);
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (showBaziModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showBaziModal]);
+
   useEffect(() => {
     localStorage.setItem('bazi_profile', JSON.stringify(profile));
   }, [profile]);
@@ -520,7 +532,7 @@ export default function App() {
             )}
           </div>
 
-          <span>WEB_VERSION: v1.2.4</span>
+          <span>BUILD_REV: 20260507.0055</span>
         </footer>
 
         {/* Prompt Modal */}
@@ -538,9 +550,9 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="glass w-full max-w-2xl relative z-[10000] flex flex-col max-h-[85vh] border border-accent-blue/30 shadow-2xl shadow-accent-blue/20"
+                className="glass w-full max-w-2xl relative z-[10000] flex flex-col max-h-[85vh] border border-accent-blue/30 shadow-2xl shadow-accent-blue/20 p-6 sm:p-8"
               >
-                <div className="p-4 border-b border-border-tech flex justify-between items-center">
+                <div className="pb-4 border-b border-border-tech/50 flex justify-between items-center bg-transparent">
                   <div className="flex items-center gap-2">
                     <Sparkles size={16} className="text-accent-blue" />
                     <h3 className="text-sm font-bold tracking-tight uppercase">AI Fortune Report Prompt</h3>
@@ -553,13 +565,13 @@ export default function App() {
                   </button>
                 </div>
                 
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                  <div className="bg-bg-dark/50 border border-border-tech p-4 rounded font-mono text-[11px] whitespace-pre-wrap leading-relaxed text-white/80">
+                <div className="flex-1 overflow-y-auto py-6 no-scrollbar">
+                  <div className="font-mono text-[11px] whitespace-pre-wrap leading-relaxed text-white/90">
                     {generatedPrompt}
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-border-tech flex justify-end gap-3">
+                <div className="pt-4 border-t border-border-tech/50 flex justify-end gap-3">
                   <button
                     onClick={handleCopy}
                     className="px-6 py-2 bg-accent-blue text-bg-dark text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"

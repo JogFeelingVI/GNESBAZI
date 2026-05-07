@@ -36,6 +36,15 @@ body {
   @apply font-mono text-[10px] text-text-muted uppercase tracking-widest;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .value-tech {
   @apply font-mono text-accent-blue;
 }

@@ -6,7 +6,7 @@
 
 This contains everything you need to run your app locally.
 
-View your app in AI Studio: https://ai.studio/apps/f770d6dd-e034-4ce2-83c1-be3d5cee6a6b
+View your app in AI Studio: https://ai.studio/apps/f770d6dd-e034-4ce2-83c1-be3d5cee6a6b / https://gnesbazi.vercel.app/
 
 ## Run Locally
 

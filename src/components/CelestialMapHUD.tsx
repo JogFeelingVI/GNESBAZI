@@ -146,12 +146,14 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
   const exportAsPng = useCallback(async () => {
     if (hudRef.current === null) return;
     
+    // Toggle exporting class to simplify styles (remove blurs)
+    const el = hudRef.current;
+    el.classList.add('is-exporting');
+
     // Wait for any pending transitions or Leaflet tiles to settle
-    await new Promise(r => setTimeout(r, 1000));
+    await new Promise(r => setTimeout(r, 1200));
     
     try {
-      const el = hudRef.current;
-      
       // Use actual dimensions to prevent distortion
       const width = el.offsetWidth;
       const height = el.offsetHeight;
@@ -168,11 +170,15 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
       });
       
       const link = document.createElement('a');
-      link.download = `Observation_${new Date().toISOString().slice(0, 10)}_${lat.toFixed(2)}N.png`;
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.download = `Observation_${dateStr}_${lat.toFixed(2)}N.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
       console.error('Export failed:', err);
+    } finally {
+      // Restore styles
+      el.classList.remove('is-exporting');
     }
   }, [lat, lng]);
 

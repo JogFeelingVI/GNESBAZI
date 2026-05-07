@@ -520,7 +520,7 @@ export default function App() {
             )}
           </div>
 
-          <span>SESSION_EPOCH: {new Date().toISOString()}</span>
+          <span>WEB_VERSION: v1.2.4</span>
         </footer>
 
         {/* Prompt Modal */}

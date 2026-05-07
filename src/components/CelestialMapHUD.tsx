@@ -145,16 +145,30 @@ const CelestialMapHUD: React.FC<CelestialMapHUDProps> = ({
 
   const exportAsPng = useCallback(async () => {
     if (hudRef.current === null) return;
-    await new Promise(r => setTimeout(r, 800));
+    
+    // Wait for any pending transitions or Leaflet tiles to settle
+    await new Promise(r => setTimeout(r, 1000));
+    
     try {
-      const dataUrl = await toPng(hudRef.current, {
+      const el = hudRef.current;
+      
+      // Use actual dimensions to prevent distortion
+      const width = el.offsetWidth;
+      const height = el.offsetHeight;
+
+      const dataUrl = await toPng(el, {
         cacheBust: true,
         backgroundColor: '#0F1115',
-        canvasWidth: 1200,
-        canvasHeight: 800,
+        width: width,
+        height: height,
+        pixelRatio: 2, // Sharp high-res output
+        style: {
+          borderRadius: '0' // Remove rounded corners for a cleaner export
+        }
       });
+      
       const link = document.createElement('a');
-      link.download = `Observation_${new Date().toISOString().slice(0,10)}_${lat.toFixed(2)}N.png`;
+      link.download = `Observation_${new Date().toISOString().slice(0, 10)}_${lat.toFixed(2)}N.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
